@@ -14,32 +14,26 @@ export const createOrgController = async(req:Request<UserRouteParams>,res:Respon
 
 
         const {name,description} = req.body;
-        const userId = req.headers["userId"] as string;
-
+        console.log("=================");
+        console.log(name);
+        console.log(description);
+        console.log("=================");
         const org = await prisma.org.create({
             data:{
                 name,
                 description,
-                userId
             }
         })
-
         return res.status(201).json({
             message:"org created successfully",
             org
         })
-
-    }catch(err){
-        return res.status(500).json({message:"INTERNAL SERVER ERROR"});
+    }catch(err:any){
+        return res.status(500).json({message:err.message});
     }
-
 }
 
-
-
 export const getOrgController = async(req:Request<UserRouteParams>,res:Response)=>{
-    
-
     const{orgId} = req.params;
     const org = await prisma.org.findUnique({
         where:{id:orgId}
@@ -54,5 +48,39 @@ export const getOrgController = async(req:Request<UserRouteParams>,res:Response)
 
 export const getOrgsController = async(req:Request<UserRouteParams>,res:Response)=>{
 
+    const orgs = await prisma.org.findMany();
 
+
+    return res.status(200).json({
+        message:"orgs fetched successfully",
+        orgs
+    })
+
+}
+
+
+export const deleteOrgController = async(req:Request<UserRouteParams>,res:Response)=>{
+    try{
+
+
+        const {orgId } = req.params;
+
+
+        const deletedOrg = await prisma.org.delete({
+
+            where:{id:orgId},
+            select:{
+                id:true,
+                name:true
+            }
+        })
+
+        return res.status(200).json({
+            message:"org deleted successfully",
+            deletedOrg
+        })
+    }catch(err:any){
+
+        return res.status(500).json({message:err.message});
+    }
 }

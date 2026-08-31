@@ -2,10 +2,14 @@
 import express  from "express"
 
 import {prisma} from "db/client"
-
+import orgRouter from "./routes/org.route";
+import boardRouter from "./routes/board.route";
 
 const app = express()
 app.use(express.json())
+
+app.use("/org",orgRouter);
+app.use("/board",boardRouter)
 
 app.get("/health",(req,res)=>{
 
