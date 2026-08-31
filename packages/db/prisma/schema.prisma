@@ -19,4 +19,104 @@ model User {
   username String @unique
   password String 
 
+
+  memberships Membership[]
+  issueMappings IssueMapping[]
+}
+
+model Org{
+  id String @id @default(uuid())
+  name String 
+  description String
+
+  memberships Membership[]
+  board Board[]
+}
+
+model Membership{
+
+  id        String  @id @default(uuid())
+  userId    String
+  orgId     String  
+  role      Role
+  accepted  Boolean
+
+
+  user User @relation(fields: [userId],references: [id],onDelete: Cascade)
+  org  Org @relation(fields: [orgId],references: [id],onDelete: Cascade)
+
+}
+
+enum Role {
+  MEMBER
+  ADMIN
+}
+
+
+model Board{
+
+  id String @id @default(uuid())
+  title String
+  orgId String 
+
+  org Org @relation(fields: [orgId],references: [id],onDelete: Restrict)
+  issues Issue[]
+  sections Section[]
+
+}
+
+model Issue{
+
+  id          String @id @default(uuid())
+  title       String
+  description String
+  boardId     String 
+  sectionId   String
+
+
+
+  board Board @relation(fields: [boardId],references: [id],onDelete: Restrict)
+  section Section @relation(fields: [sectionId],references: [id],onDelete: Restrict)
+  comments Comment[]
+  issueMappings IssueMapping[]
+
+
+}
+
+model Section{
+  id String @id @default(uuid())
+  title SectionType
+  boardId String
+
+
+  board Board @relation(fields: [boardId],references: [id],onDelete: Restrict)
+  issues Issue[]
+}
+
+enum SectionType {
+  IN_PROGRESS
+  UPCOMING
+  DONE
+}
+
+model Comment{
+  id String @id @default(uuid())
+  content String
+  issueId String 
+
+
+  issue Issue @relation(fields: [issueId],references: [id],onDelete: Cascade)
+}
+
+model IssueMapping{
+
+  id String @id @default(uuid())
+  userId String
+  issueId String
+
+
+  user User @relation(fields: [userId],references: [id],onDelete: Cascade)
+  issue Issue @relation(fields: [issueId],references: [id],onDelete: Cascade)
+
+  @@unique([userId,issueId])
 }
