@@ -34,6 +34,16 @@ export const createBoardController = async(req:Request<createBoardInterface>,res
             }
         })
 
+        //auto create 3 sections for this board.
+
+        await prisma.section.createMany({
+            data:[
+                {title:"UPCOMING",boardId:board.id},
+                {title:"IN_PROGRESS",boardId:board.id},
+                {title:"DONE",boardId:board.id}
+            ]
+        })
+
         return res.status(200).json({
             message:"Board created successfully",
             board
@@ -77,7 +87,23 @@ export const getBoardController = async(req:Request<getBoardInterface>,res:Respo
         
 
         const board = await prisma.board.findUnique({
-            where:{id:boardId,orgId:orgId}
+            where:{id:boardId,orgId:orgId},
+            include:{
+                sections:{
+                    include:{
+                        issues:{
+                            include:{
+                                issueMappings:{
+                                    include:{
+                                        user:true
+                                    }
+                                },
+                                comments:true
+                            }
+                        }
+                    }
+                }
+            }
         })
 
         return res.status(200).json({
