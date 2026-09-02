@@ -45,6 +45,8 @@ model Membership{
   user User @relation(fields: [userId],references: [id],onDelete: Cascade)
   org  Org @relation(fields: [orgId],references: [id],onDelete: Cascade)
 
+  @@unique([userId,orgId])
+
 }
 
 enum Role {

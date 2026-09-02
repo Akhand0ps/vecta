@@ -1,8 +1,11 @@
 {
-  "name": "backend",
+  "name": "mailer",
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "exports": {
+    ".": "./index.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
@@ -10,9 +13,6 @@
     "typescript": "^7"
   },
   "dependencies": {
-    "@types/express": "^5.0.6",
-    "express": "^5.2.1",
-    "db":"*",
-    "mailer":"*"
+    "resend": "^6.25.0"
   }
 }
