@@ -1,5 +1,5 @@
 import {prisma} from "db/client";
-import { Request,Response } from "express";
+import  type { Request,Response } from "express";
 
 
 

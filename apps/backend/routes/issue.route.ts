@@ -6,7 +6,12 @@ import{
     getAllIssuesController,
     updateIssueController,
     deleteIssueController,
-    issueMoveController
+    issueMoveController,
+    assignIssueController,
+    unAssignIssueContrller,
+    getIssueAssigneesController,
+    getAssignHistoryController
+
 } from "../controllers/issue.controller";
 
 
@@ -21,6 +26,14 @@ router.get("/all/:boardId",getAllIssuesController);
 router.put("/update/:boardId/:sectionId/:issueId",updateIssueController);
 router.delete("/delete/:boardId/:sectionId/:issueId",deleteIssueController);
 router.put("/move/:boardId/:sectionId/:issueId",issueMoveController);
+
+
+//issuemapping
+
+router.post("/:issueId/assign",assignIssueController)
+router.post("/:issueId/unassign",unAssignIssueContrller)
+router.get("/:issueId/assignees/active",getIssueAssigneesController)
+router.get("/:issueId/assignees/history",getAssignHistoryController)
 
 
 export default router;

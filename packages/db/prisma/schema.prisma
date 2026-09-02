@@ -113,10 +113,17 @@ model IssueMapping{
   id String @id @default(uuid())
   userId String
   issueId String
+  status AssignStatus @default(ACTIVE)
 
 
   user User @relation(fields: [userId],references: [id],onDelete: Cascade)
   issue Issue @relation(fields: [issueId],references: [id],onDelete: Cascade)
 
   @@unique([userId,issueId])
+}
+
+enum AssignStatus {
+
+  ACTIVE
+  INACTIVE
 }

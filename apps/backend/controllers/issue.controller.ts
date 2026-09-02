@@ -1,6 +1,5 @@
 import {prisma} from "db/client"
-import { Request,Response } from "express"
-
+import type { Request,Response } from "express"
 
 interface createSection{
 
@@ -298,3 +297,189 @@ export const issueMoveController = async(req:Request<issueMove>,res:Response)=>{
 
 }
 
+
+
+//  issueMappning
+
+
+interface issueMappingsInterface{
+    userId:string,
+    issueId:string,
+    status?:string
+}
+
+// enum AssignStatus{
+//     ACTIVE="ACTIVE",
+//     INACTIVE="INACTIVE"
+// }
+
+export const assignIssueController = async(req:Request<issueMappingsInterface>,res:Response)=>{
+
+    try{
+        
+        const {issueId} = req.params;
+        const {userId} = req.body;
+
+        const user = await prisma.user.findUnique({
+            where:{id:userId}
+        })
+
+        const issue = await prisma.issue.findUnique({
+            where:{id:issueId}
+        })
+        if(!issue)return res.status(404).json({message:"Issue not foundd!!"})
+        const alreadAssigned = await prisma.issueMapping.findFirst({
+            where:{issueId,userId}
+        })
+
+        if(alreadAssigned){
+
+            return res.status(400).json({
+                message:"User already assingned"
+            })
+        }
+
+
+        const issueassign = await prisma.issueMapping.create({
+            data:{
+                issueId:issueId,
+                userId:userId,
+                status:"ACTIVE"
+            }
+        })
+
+        return res.status(200).json({
+            message:"Issue assigned successfully",
+            issueassign
+        })
+
+    }catch(err:any){
+        return res.status(500).json({
+            err:err.message
+        })
+    }
+}
+
+
+export const unAssignIssueContrller = async(req:Request<issueMappingsInterface>,res:Response)=>{
+
+    try{
+        const {issueId} = req.params;
+        const {userId} = req.body;
+
+        const user = await prisma.user.findUnique({
+            where:{id:userId}
+        })
+        if(!user) return res.status(400).json({message:"user not found nice try"});
+
+        const issue = await prisma.issue.findUnique({
+            where:{id:issueId}
+        })
+        if(!issue)return res.status(404).json({message:"issue not found"})
+        
+
+        const unassigned = await prisma.issueMapping.updateMany({
+            where:{
+                issueId:issueId,
+                userId:userId,
+                status:"ACTIVE"
+            },
+            data:{
+                status:"INACTIVE"
+            }
+        })
+
+        if (unassigned.count === 0) {
+            return res.status(400).json({
+                message: "User is not assigned to this issue"
+            })
+        }
+
+        return res.status(200).json({
+            message:"issue unassigned successfully"
+        })
+
+    }catch(err:any){
+        return res.status(500).json({
+            err:err.message
+        })
+    }
+    
+}
+
+interface getAssigneesInterface{
+    issueId:string;
+}
+export const getIssueAssigneesController = async(req:Request<getAssigneesInterface>,res:Response)=>{
+    try{
+
+        const {issueId} = req.params;
+
+        const assignees = await prisma.issueMapping.findMany({
+            where:{
+                issueId:issueId,
+                status:"ACTIVE"
+            },
+            include:{
+                user:{
+                    select:{
+                        id:true,
+                        username:true
+                    }
+                }
+            }
+        })
+
+        if(!assignees){
+            return res.status(404).json({
+                message:"No assignees found for this issue"
+            })
+        }
+
+        return res.status(200).json({
+            message:"Issue assignees fetched successfully",
+            assignees
+        })
+    
+    }catch(err:any){
+        return res.status(500).json({
+            err:err.message
+        })
+    }
+}
+
+
+export const getAssignHistoryController = async(req:Request<getAssigneesInterface>,res:Response)=>{
+    try{
+        const {issueId} = req.params;
+
+        const assignees = await prisma.issueMapping.findMany({
+            where:{
+                issueId:issueId
+            },
+            include:{
+                user:{
+                    select:{
+                        id:true,
+                        username:true
+                    }
+                }
+            }
+        })
+
+        if(!assignees){
+            return res.status(404).json({
+                message:"No assignees found for this issue"
+            })
+        }
+
+        return res.status(200).json({
+            message:"Issue assignees fetched successfully",
+            assignees
+        })
+    }catch(err:any){
+        return res.status(500).json({
+            err:err.message
+        })
+    }
+}

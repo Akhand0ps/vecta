@@ -4,12 +4,20 @@ import express  from "express"
 import {prisma} from "db/client"
 import orgRouter from "./routes/org.route";
 import boardRouter from "./routes/board.route";
+import sectionRouter from "./routes/section.route";
+import issueRouter from "./routes/issue.route";
+import commentRouter from "./routes/comment.route";
+
 
 const app = express()
 app.use(express.json())
 
 app.use("/org",orgRouter);
-app.use("/board",boardRouter)
+app.use("/board",boardRouter);
+app.use("/section",sectionRouter);
+app.use("/issue",issueRouter);
+app.use("/comment",commentRouter);
+
 
 app.get("/health",(req,res)=>{
 
