@@ -8,6 +8,7 @@ import sectionRouter from "./routes/section.route";
 import issueRouter from "./routes/issue.route";
 import commentRouter from "./routes/comment.route";
 import memberRouter from "./routes/member.route";
+import userRouter from "./routes/user.route";
 
 
 const app = express()
@@ -19,6 +20,7 @@ app.use("/section",sectionRouter);
 app.use("/issue",issueRouter);
 app.use("/comment",commentRouter);
 app.use("/invite",memberRouter);
+app.use("/auth",userRouter);
 
 
 app.get("/health",(req,res)=>{
@@ -28,22 +30,6 @@ app.get("/health",(req,res)=>{
     })
 })
 
-app.post("/signup",async(req,res)=>{
-
-    const {username,password} = req.body;
-    
-    await prisma.user.create({
-        data:{
-            username,
-            password
-        }
-    })
-
-    return res.status(201).json({
-        message:"user created successfully"
-    })
-    
-})
 
  
 

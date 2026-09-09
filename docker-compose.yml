@@ -1,0 +1,29 @@
+# docker-compose.yml (at monorepo root)
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine         # lightweight alpine version
+    container_name: trello_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: trellodb
+    ports:
+      - "5432:5432"                   # host:container
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # persist data
+
+  redis:
+    image: redis:7-alpine
+    container_name: trello_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:

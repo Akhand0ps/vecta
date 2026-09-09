@@ -4,7 +4,7 @@ import {AddMemberController} from "../controllers/membership.controller";
 const router = Router();
 
 
-router.post("/invite",AddMemberController)
+router.post("/",AddMemberController)
 
 
 

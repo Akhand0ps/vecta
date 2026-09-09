@@ -21,6 +21,12 @@ export const AddMemberController = async(req:Request<addMemberInterface>,res:Res
                 message:"Please provide all the required fields"
             })
         }
+
+        console.log("======================================")
+        console.log(userId)
+        console.log(orgId)
+        console.log(role)
+        console.log("======================================")
         const org = await prisma.org.findUnique({
             where:{id:orgId}
         })
@@ -33,7 +39,9 @@ export const AddMemberController = async(req:Request<addMemberInterface>,res:Res
         })
         if(!user)return res.status(404).json({message:"User does not exist. you cannot add, kindly ask user to signup."})
 
-
+        /*
+            
+        */
 
         //first check if the current user is "admin of the org"
         const currentUser :string | undefined = "1";
@@ -92,7 +100,7 @@ export const AddMemberController = async(req:Request<addMemberInterface>,res:Res
             inviteLink:invitation.url
         })
 
-        if(email.err){
+        if(!email.success){
             return res.status(400).json({
                 message:"Failed to send invitation email"
             })
