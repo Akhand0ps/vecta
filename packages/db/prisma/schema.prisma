@@ -22,6 +22,7 @@ model User {
 
   memberships Membership[]
   issueMappings IssueMapping[]
+  inviteby Invitation[]
 }
 
 model Org{
@@ -31,6 +32,9 @@ model Org{
 
   memberships Membership[]
   board Board[]
+  
+  invites Invitation[]
+
 }
 
 model Membership{
@@ -128,4 +132,30 @@ enum AssignStatus {
 
   ACTIVE
   INACTIVE
+}
+
+
+model Invitation {
+
+
+  id String @id @default(uuid())
+
+  username String
+  tokenHash String
+
+
+  orgId String
+  inviteById String
+
+  expiresAt DateTime
+  acceptedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  org Org @relation(fields: [orgId],references: [id])
+
+  invitedBy User @relation(fields: [inviteById],references: [id])
+
+
+  @@index([tokenHash])
 }

@@ -2,6 +2,7 @@
 import {prisma} from "db/client";
 import type { Request,Response } from "express";
 import {sendInviteEmail} from "mailer";
+import {generateUrl} from "../utils/url"
 
 interface addMemberInterface{
     userId:string;
@@ -74,6 +75,29 @@ export const AddMemberController = async(req:Request<addMemberInterface>,res:Res
                 accepted:false
             }
         })
+
+
+        ///background jobs to send the email to the user,
+
+        const invitation = await generateUrl({
+            orgId:orgId,
+            username:user.username,
+            inviteById:currentUser
+        })
+
+
+        const email = await sendInviteEmail({
+            to:user.username,
+            orgName:org.name,
+            inviteLink:invitation.url
+        })
+
+        if(email.err){
+            return res.status(400).json({
+                message:"Failed to send invitation email"
+            })
+        }
+        
 
         return res.status(200).json({
             message:"Invitation sent to the user.",

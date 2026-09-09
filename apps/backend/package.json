@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "db": "*",
     "express": "^5.2.1",
-    "db":"*",
-    "mailer":"*"
+    "jsonwebtoken": "^9.0.3",
+    "mailer": "*"
   }
 }

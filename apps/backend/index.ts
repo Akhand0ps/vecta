@@ -7,6 +7,7 @@ import boardRouter from "./routes/board.route";
 import sectionRouter from "./routes/section.route";
 import issueRouter from "./routes/issue.route";
 import commentRouter from "./routes/comment.route";
+import memberRouter from "./routes/member.route";
 
 
 const app = express()
@@ -17,6 +18,7 @@ app.use("/board",boardRouter);
 app.use("/section",sectionRouter);
 app.use("/issue",issueRouter);
 app.use("/comment",commentRouter);
+app.use("/invite",memberRouter);
 
 
 app.get("/health",(req,res)=>{
