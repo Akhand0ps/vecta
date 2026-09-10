@@ -13,6 +13,7 @@ interface addMemberInterface{
 
 export const AddMemberController = async(req:Request<addMemberInterface>,res:Response)=>{
 
+    console.log("addmember")
     try{
 
         const{userId,orgId,role} = req.body;
@@ -22,11 +23,11 @@ export const AddMemberController = async(req:Request<addMemberInterface>,res:Res
             })
         }
 
-        console.log("======================================")
-        console.log(userId)
-        console.log(orgId)
-        console.log(role)
-        console.log("======================================")
+        // console.log("======================================")
+        // console.log(userId)
+        // console.log(orgId)
+        // console.log(role)
+        // console.log("======================================")
         const org = await prisma.org.findUnique({
             where:{id:orgId}
         })
@@ -44,7 +45,7 @@ export const AddMemberController = async(req:Request<addMemberInterface>,res:Res
         */
 
         //first check if the current user is "admin of the org"
-        const currentUser :string | undefined = "1";
+        const currentUser = req.userId;
         const membership = await prisma.membership.findFirst({
             where:{userId:currentUser,orgId:orgId,role:"ADMIN",accepted:true}
         })
@@ -90,8 +91,15 @@ export const AddMemberController = async(req:Request<addMemberInterface>,res:Res
         const invitation = await generateUrl({
             orgId:orgId,
             username:user.username,
-            inviteById:currentUser
+            inviteById:currentUser!
         })
+
+
+        console.log("==================email=====================");
+
+        console.log(user.username)
+
+        console.log("==================email=====================");
 
 
         const email = await sendInviteEmail({
@@ -99,6 +107,11 @@ export const AddMemberController = async(req:Request<addMemberInterface>,res:Res
             orgName:org.name,
             inviteLink:invitation.url
         })
+
+
+        console.log("============================================")
+        console.log(email);
+        console.log("============================================")
 
         if(!email.success){
             return res.status(400).json({

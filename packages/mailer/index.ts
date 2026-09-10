@@ -223,7 +223,7 @@ export const sendInviteEmail = async({to,orgName,inviteLink}:SendInviteParams)=>
 
 
     const { data, error } = await resend.emails.send({
-            from: 'Vecta <no-reply@apscodes.tech>',
+            from: 'Vecta <invite@apscodes.tech>',
             to: [to],
             subject: `You're invited to join ${orgName}`,
             html: InviteEmailTemplate({ orgName,inviteLink }),

@@ -11,8 +11,6 @@ interface UserRouteParams{
 export const createOrgController = async(req:Request<UserRouteParams>,res:Response)=>{
     
     try{
-
-
         const {name,description} = req.body;
         console.log("=================");
         console.log(name);
@@ -23,11 +21,20 @@ export const createOrgController = async(req:Request<UserRouteParams>,res:Respon
                 name,
                 description,
             }
+        });
+
+        await prisma.membership.create({
+            data:{
+                userId:req.userId!,
+                orgId:org.id,
+                role:"ADMIN",
+                accepted:true
+            }
         })
         return res.status(201).json({
             message:"org created successfully",
             org
-        })
+        })  
     }catch(err:any){
         return res.status(500).json({message:err.message});
     }

@@ -23,6 +23,8 @@ model User {
   memberships Membership[]
   issueMappings IssueMapping[]
   inviteby Invitation[]
+
+  sessions Session[]
 }
 
 model Org{
@@ -158,4 +160,20 @@ model Invitation {
 
 
   @@index([tokenHash])
+}
+
+model Session {
+  id String @id @default(uuid())
+
+
+  tokenHash String @unique
+
+  userId String 
+
+  expiresAt DateTime
+
+  createdAt DateTime @default(now())
+
+
+  user User @relation(fields: [userId],references: [id])
 }

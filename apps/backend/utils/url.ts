@@ -11,13 +11,15 @@ interface requiredPara{
     inviteById:string;
 }
 
-export const generateUrl = async(requestData:requiredPara)=>{
 
-    const token = crypto.randomBytes(32).toString('hex')
+export const token = crypto.randomBytes(32).toString('hex')
 
 
-    const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
+export const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
 
+export const generateUrl = async(requestData:requiredPara)=>{ 
+
+    
     const baseUrl = process.env.BASE_URL || "http://localhost:3000"
 
     const url = `${baseUrl}/invite/${token}`

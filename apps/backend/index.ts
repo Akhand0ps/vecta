@@ -11,15 +11,23 @@ import memberRouter from "./routes/member.route";
 import userRouter from "./routes/user.route";
 
 
+import { authMiddleware } from "./middleware/auth.middleware";
+import cookieParser from "cookie-parser";
+
 const app = express()
 app.use(express.json())
+app.use(cookieParser())
 
-app.use("/org",orgRouter);
-app.use("/board",boardRouter);
-app.use("/section",sectionRouter);
-app.use("/issue",issueRouter);
-app.use("/comment",commentRouter);
-app.use("/invite",memberRouter);
+
+
+// //apply auth middleware to all routes after this line
+
+app.use("/org",authMiddleware,orgRouter);
+app.use("/board",authMiddleware,boardRouter);
+app.use("/section",authMiddleware,sectionRouter);
+app.use("/issue",authMiddleware,issueRouter);
+app.use("/comment",authMiddleware,commentRouter);
+app.use("/invite",authMiddleware,memberRouter);
 app.use("/auth",userRouter);
 
 
