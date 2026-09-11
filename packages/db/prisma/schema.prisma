@@ -24,6 +24,9 @@ model User {
   issueMappings IssueMapping[]
   inviteby Invitation[]
 
+
+
+  invitations Invitation[] @relation("invitationTarget")
   sessions Session[]
 }
 
@@ -143,7 +146,8 @@ model Invitation {
   id String @id @default(uuid())
 
   username String
-  tokenHash String
+  userId  String
+  tokenHash String @unique
 
 
   orgId String
@@ -152,14 +156,15 @@ model Invitation {
   expiresAt DateTime
   acceptedAt DateTime?
 
+  revoked Boolean @default(false)
+  revokedAt DateTime?
+
   createdAt DateTime @default(now())
 
   org Org @relation(fields: [orgId],references: [id])
 
   invitedBy User @relation(fields: [inviteById],references: [id])
-
-
-  @@index([tokenHash])
+  user User @relation("invitationTarget",fields:[userId],references:[id])
 }
 
 model Session {
@@ -176,4 +181,4 @@ model Session {
 
 
   user User @relation(fields: [userId],references: [id])
-}
+} 

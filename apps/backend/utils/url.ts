@@ -9,6 +9,7 @@ interface requiredPara{
     orgId:string;
     username:string;
     inviteById:string;
+    userId:string;
 }
 
 
@@ -22,7 +23,7 @@ export const generateUrl = async(requestData:requiredPara)=>{
     
     const baseUrl = process.env.BASE_URL || "http://localhost:3000"
 
-    const url = `${baseUrl}/invite/${token}`
+    const url = `${baseUrl}/invite/verify/${token}`
 
     const expiresAt:Date = new Date(Date.now() + 24 * 60 * 60 * 1000)
 
@@ -32,10 +33,12 @@ export const generateUrl = async(requestData:requiredPara)=>{
 
         data:{
             username:requestData.username,
+            userId:requestData.userId,
             tokenHash:tokenHash,
             expiresAt:expiresAt,
             orgId:requestData.orgId,
             inviteById:requestData.inviteById,
+            
         }
     })
 

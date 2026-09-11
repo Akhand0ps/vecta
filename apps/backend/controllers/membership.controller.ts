@@ -1,8 +1,10 @@
 
 import {prisma} from "db/client";
 import type { Request,Response } from "express";
-import {sendInviteEmail} from "mailer";
+import {sendInviteEmail,sendWelcomeOrgEmail} from "mailer";
 import {generateUrl} from "../utils/url"
+import crypto from "crypto";
+
 
 interface addMemberInterface{
     userId:string;
@@ -76,14 +78,6 @@ export const AddMemberController = async(req:Request<addMemberInterface>,res:Res
             
         }
         
-        const addMember = await prisma.membership.create({
-            data:{
-                userId:userId,
-                orgId:orgId,
-                role:role,
-                accepted:false
-            }
-        })
 
 
         ///background jobs to send the email to the user,
@@ -91,7 +85,8 @@ export const AddMemberController = async(req:Request<addMemberInterface>,res:Res
         const invitation = await generateUrl({
             orgId:orgId,
             username:user.username,
-            inviteById:currentUser!
+            inviteById:currentUser!,
+            userId:userId,
         })
 
 
@@ -109,9 +104,9 @@ export const AddMemberController = async(req:Request<addMemberInterface>,res:Res
         })
 
 
-        console.log("============================================")
-        console.log(email);
-        console.log("============================================")
+        // console.log("============================================")
+        // console.log(email);
+        // console.log("============================================")
 
         if(!email.success){
             return res.status(400).json({
@@ -119,6 +114,14 @@ export const AddMemberController = async(req:Request<addMemberInterface>,res:Res
             })
         }
         
+        const addMember = await prisma.membership.create({
+            data:{
+                userId:userId,
+                orgId:orgId,
+                role:role,
+                accepted:false
+            }
+        })
 
         return res.status(200).json({
             message:"Invitation sent to the user.",
@@ -131,3 +134,110 @@ export const AddMemberController = async(req:Request<addMemberInterface>,res:Res
         })
     }
 }
+
+
+
+interface InvitationInterface{
+    token:string;
+}
+export const verifyInvitation = async(req:Request<InvitationInterface>,res:Response)=>{
+    try{
+        const{token} = req.params;
+
+
+        if(!token)return res.status(400).json({message:"Token is required"});
+        const tokenHash:string = crypto.createHash("sha256").update(token).digest("hex");
+        
+
+        const invitation  = await prisma.invitation.findUnique({
+            where:{tokenHash:tokenHash},
+            include:{
+                org:{
+                    select:{
+                        name:true
+                    }
+                },
+                
+            }
+        })
+
+
+
+        if(!invitation)return res.status(404).json({message:"Invalid invitation."})
+        
+        if(invitation.expiresAt < new Date()) return res.status(400).json({message:"Invatation is expired"});
+
+        if(invitation.acceptedAt)return res.status(200).json({message:"You are already a member of this organization!"});
+
+        if(invitation.revoked) return res.status(400).json({message:"your invitation is revoked"});
+
+        await prisma.invitation.update({
+            where:{tokenHash:tokenHash},
+            data:{acceptedAt:new Date()}
+        })
+
+        await prisma.membership.update({
+            where:{
+                userId_orgId:{
+                    userId:invitation.userId,
+                    orgId:invitation.orgId,
+                }
+
+            },
+            data:{accepted:true}
+        })
+
+        res.status(200).json({message:"Invitation accepted successfully"});
+        //send welcome org email
+
+
+        const welcomeOrgMail = await sendWelcomeOrgEmail({
+            to:invitation.username,
+            orgName:invitation.org.name
+            })
+
+        if(!welcomeOrgMail.success){
+            console.log("Failed to send welcome org email",welcomeOrgMail.err)
+        }
+        return; // we will return after sending the email in production for now we are returning here
+    }catch(err:any){
+        return res.status(500).json({
+            message:err.message
+        })
+    }
+}
+
+
+
+
+
+
+//make route to revoked the invation before/after the invitation sent.
+
+export const revokeInvitation = async(req:Request,res:Response)=>{
+
+    try{
+
+        const {orgId,userId} = req.body;
+
+        if(!orgId || !userId)return res.status(400).json({message:"Please provide all the required fields"});
+
+        const invitation = await prisma.invitation.findFirst({
+            where:{userId:userId,orgId:orgId}
+        })
+        if(!invitation)return res.status(404).json({message:"Invitation not found"})
+
+        await prisma.invitation.update({
+            where:{id:invitation.id},
+            data:{revoked:true}
+        })
+
+        return res.status(200).json({message:"Invitation revoked successfully"});
+    }catch(err:any){
+        return res.status(500).json({
+            message:err.message
+        })
+    }
+}
+
+

@@ -84,12 +84,12 @@ export const login = async(req:Request,res:Response)=>{
         await redis.set(`otp:${user.id}:attempts`,0,{EX:60*2});
 
         
-        // const emailResponse = await sendOtpEmail({to:username,otp:otp});
+        const emailResponse = await sendOtpEmail({to:username,otp:otp});
         
-        // if(!emailResponse.success){
-        //     return res.status(500).json({message:"Failed to send otp email"});
-        // }
-        console.log("OTP: ",otp)
+        if(!emailResponse.success){
+            return res.status(500).json({message:"Failed to send otp email"});
+        }
+        // console.log("OTP: ",otp)
 
         return res.status(200).json({
             message:"Otp sent successfully!",

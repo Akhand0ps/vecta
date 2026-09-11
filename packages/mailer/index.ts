@@ -601,3 +601,201 @@ export const sendOtpEmail = async({to,otp}:emailData)=>{
 
     return {success:true,data:data}
 }
+
+
+// send welcome email to the org
+
+
+interface welcomeOrgInterface{
+  to:string,
+  orgName:string,
+}
+
+const WelcomeOrgEmailTemplate = ({orgName}:{orgName:string}) => {
+    return `
+    <!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to Vecta</title>
+</head>
+
+<body style="
+  margin: 0;
+  padding: 0;
+  background-color: #f7f7f8;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #18181b;
+">
+
+  <table
+    role="presentation"
+    width="100%"
+    cellspacing="0"
+    cellpadding="0"
+    border="0"
+    style="background-color: #f7f7f8; width: 100%;"
+  >
+    <tr>
+      <td align="center" style="padding: 56px 20px;">
+
+        <table
+          role="presentation"
+          width="100%"
+          cellspacing="0"
+          cellpadding="0"
+          border="0"
+          style="
+            max-width: 520px;
+            background-color: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #eeeeef;
+          "
+        >
+
+          <tr>
+            <td style="padding: 44px 44px 32px;">
+
+              <div style="
+                text-align: center;
+                font-size: 18px;
+                font-weight: 650;
+                letter-spacing: -0.4px;
+                color: #18181b;
+                margin-bottom: 32px;
+              ">
+                Vecta
+              </div>
+
+              <h1 style="
+                margin: 0 0 24px;
+                text-align: center;
+                font-size: 28px;
+                line-height: 1.25;
+                font-weight: 650;
+                letter-spacing: -0.8px;
+                color: #18181b;
+              ">
+                Welcome to the Team
+              </h1>
+
+              <p style="
+                margin: 0 auto 24px;
+                max-width: 390px;
+                text-align: center;
+                font-size: 15px;
+                line-height: 1.7;
+                color: #66666f;
+              ">
+                You’ve been added to **${orgName}**. Get started by
+                exploring your workspace and collaborating on projects.
+              </p>
+
+              <table
+                role="presentation"
+                align="center"
+                cellspacing="0"
+                cellpadding="0"
+                border="0"
+                style="margin: 32px auto;"
+              >
+                <tr>
+                  <td align="center" style="
+                    padding: 13px 24px;
+                    border-radius: 9px;
+                    background-color: #0073e6;
+                  ">
+                    <a
+                      href="https://vecta.apscodes.tech"
+                      style="
+                        display: inline-block;
+                        padding: 13px 24px;
+                        border-radius: 9px;
+                        color: #ffffff;
+                        font-size: 14px;
+                        font-weight: 600;
+                        line-height: 1;
+                        text-decoration: none;
+                      "
+                    >
+                      Start using Vecta
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="
+                margin: 0 auto;
+                max-width: 390px;
+                text-align: center;
+                font-size: 14px;
+                line-height: 1.7;
+                color: #66666f;
+              ">
+                You’re all set. Jump in and make something great.
+              </p>
+
+            </td>
+          </tr>
+
+          <tr>
+            <td style="
+              padding: 16px 32px;
+              border-top: 1px solid #eeeeef;
+              text-align: center;
+            ">
+              <p style="
+                margin: 0;
+                font-size: 12px;
+                line-height: 1.6;
+                color: #a1a1aa;
+              ">
+                Vecta — love to make happy
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+        <p style="
+          margin: 20px 0 0;
+          font-size: 11px;
+          line-height: 1.5;
+          color: #b0b0b7;
+          text-align: center;
+        ">
+          You received this email because you’re part of the Vecta
+          community.
+        </p>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
+    `
+}
+
+
+export const sendWelcomeOrgEmail = async({to,orgName}:welcomeOrgInterface) => {
+
+
+    const { data, error } = await resend.emails.send({
+            from: 'Vecta <invite@apscodes.tech>',
+            to: [to],
+            subject: `Welcome to ${orgName}`,
+            html: WelcomeOrgEmailTemplate({ orgName}),
+    });
+
+    if(error){
+        return {success:false,err:error.message}
+    }
+
+
+    return {
+        success:true,
+        data:data
+    }
+}
