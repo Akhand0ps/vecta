@@ -13,6 +13,7 @@ import userRouter from "./routes/user.route";
 
 import { authMiddleware } from "./middleware/auth.middleware";
 import cookieParser from "cookie-parser";
+import { errorHandler } from "./middleware/errorHandler";
 
 const app = express()
 app.use(express.json())
@@ -40,7 +41,7 @@ app.get("/health",(req,res)=>{
 
 
  
-
+app.use(errorHandler);
 app.listen(3000,()=>{
 
     console.log(`Server is running on port 3000`)

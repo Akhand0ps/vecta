@@ -1,6 +1,8 @@
 
 import {prisma} from "db/client";
 import type { Request,Response } from "express";
+import { asyncHandler } from "../utils/asyncHandler";
+import { AppError } from "../errors/AppError";
 
 
 interface UserRouteParams{
@@ -8,40 +10,40 @@ interface UserRouteParams{
     orgId?:string;
 }
 
-export const createOrgController = async(req:Request<UserRouteParams>,res:Response)=>{
-    
-    try{
-        const {name,description} = req.body;
-        console.log("=================");
-        console.log(name);
-        console.log(description);
-        console.log("=================");
-        const org = await prisma.org.create({
-            data:{
-                name,
-                description,
-            }
-        });
+export const createOrgController = asyncHandler(async(req:Request<UserRouteParams>,res:Response)=>{
 
-        await prisma.membership.create({
-            data:{
-                userId:req.userId!,
-                orgId:org.id,
-                role:"ADMIN",
-                accepted:true
-            }
-        })
-        return res.status(201).json({
-            message:"org created successfully",
-            org
-        })  
-    }catch(err:any){
-        return res.status(500).json({message:err.message});
-    }
+    const {name,description} = req.body;
+    // console.log("=================");
+    // console.log(name);
+    // console.log(description);
+    // console.log("=================");
+
+    const org = await prisma.org.create({
+        data:{
+            name,
+            description,
+        }
+    });
+
+    await prisma.membership.create({
+        data:{
+            userId:req.userId!,
+            orgId:org.id,
+            role:"ADMIN",
+            accepted:true
+        }
+    })
+    return res.status(201).json({
+        message:"org created successfully",
+        org
+    })  
 }
+)
 
-export const getOrgController = async(req:Request<UserRouteParams>,res:Response)=>{
+export const getOrgController = asyncHandler(async(req:Request<UserRouteParams>,res:Response)=>{
     const{orgId} = req.params;
+
+    if(!orgId) throw new AppError("orgId is required",400);
     const org = await prisma.org.findUnique({
         where:{id:orgId}
     })
@@ -50,7 +52,7 @@ export const getOrgController = async(req:Request<UserRouteParams>,res:Response)
         message:"org fetched successfully",
         org
     })
-}
+})
 
 
 export const getOrgsController = async(req:Request<UserRouteParams>,res:Response)=>{
