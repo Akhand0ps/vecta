@@ -1,7 +1,6 @@
 
 import express  from "express"
 
-import {prisma} from "db/client"
 import orgRouter from "./routes/org.route";
 import boardRouter from "./routes/board.route";
 import sectionRouter from "./routes/section.route";

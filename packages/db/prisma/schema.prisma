@@ -24,11 +24,18 @@ model User {
   issueMappings IssueMapping[]
   inviteby Invitation[]
 
+  avatarFileId String?  @unique
+  avatarFile StoredFile? @relation("UserAvatar",fields: [avatarFileId],references: [id])
+
+  uploadedFiles StoredFile[] @relation("UserUploadedFiles")
+
 
 
   invitations Invitation[] @relation("invitationTarget")
   sessions Session[]
 }
+
+
 
 model Org{
   id String @id @default(uuid())
@@ -182,3 +189,28 @@ model Session {
 
   user User @relation(fields: [userId],references: [id])
 } 
+
+
+model StoredFile {
+  id String @id @default(uuid())
+
+  key String @unique
+  originalName String
+  mimeType String
+  size Int
+
+
+  avatarof User? @relation("UserAvatar")
+
+
+  uploadedById String
+  uploadedBy User @relation("UserUploadedFiles",fields: [uploadedById],references: [id])
+  
+
+
+
+  createdAt DateTime @default(now())
+
+  @@index([key])
+  @@index([uploadedById])
+}

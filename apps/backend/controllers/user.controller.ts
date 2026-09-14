@@ -6,6 +6,12 @@ import { generateOtp, isValidOtp } from "../utils/otp";
 import {token,tokenHash} from  "../utils/url";
 import * as cookie from "cookie";
 
+import {uploadObject} from "storage";
+import { asyncHandler } from "../utils/asyncHandler";
+import { AppError } from "../errors/AppError";
+
+
+
 
 export const createUser = async(req:Request,res:Response)=>{
 
@@ -195,3 +201,31 @@ export const verify = async(req:Request,res:Response)=>{
 
 }
 
+
+export const uploadAvatar = asyncHandler(async(req:Request,res:Response)=>{
+
+    
+    if(!req.file){
+        throw new AppError("No file uploaded",400)
+    }
+
+    const userId = req.userId;
+
+    const key = `users/${userId}/avatar/${crypto.randomUUID()}-${req.file.originalname}`;
+
+    console.log("===============================================================");
+    console.log(key);
+    console.log("===============================================================");
+    
+    const uploadedFile = await uploadObject(
+        key,
+        req.file.buffer as Buffer,
+        req.file.mimetype as string
+    );
+    
+    return res.status(201).json({
+        message:"Avatar uploaded successfully!",
+        data:key
+    })
+
+})

@@ -1,0 +1,1 @@
+export {uploadObject} from "./src/upload";
