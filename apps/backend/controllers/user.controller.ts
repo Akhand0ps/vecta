@@ -6,7 +6,7 @@ import { generateOtp, isValidOtp } from "../utils/otp";
 import {token,tokenHash} from  "../utils/url";
 import * as cookie from "cookie";
 
-import {uploadObject} from "storage";
+import {uploadObject,deleteObject} from "storage";
 import { asyncHandler } from "../utils/asyncHandler";
 import { AppError } from "../errors/AppError";
 
@@ -210,19 +210,69 @@ export const uploadAvatar = asyncHandler(async(req:Request,res:Response)=>{
     }
 
     const userId = req.userId;
+    if(!userId) {
+        throw new AppError("Unauthorized - UserId is required",403);
+    }
 
+    const oldAvatar  = await prisma.user.findUnique({
+        where:{
+            id:userId
+        },
+        select:{
+            avatarFile:{
+                select:{
+                    id:true, 
+                    key:true
+                }
+            }
+        }
+    })
+    
     const key = `users/${userId}/avatar/${crypto.randomUUID()}-${req.file.originalname}`;
 
-    console.log("===============================================================");
-    console.log(key);
-    console.log("===============================================================");
+    // console.log("===============================================================");
+    // console.log(key);
+    // console.log("===============================================================");
     
     const uploadedFile = await uploadObject(
         key,
-        req.file.buffer as Buffer,
-        req.file.mimetype as string
+        req.file.buffer,
+        req.file.mimetype
     );
+
+    if(!uploadedFile)throw new AppError("Failed to upload avatar",500);
+
+    const originalName = req.file.originalname?.split("/").pop();
+    const transactionResult = await prisma.storedFile.create({
+        data:{
+            key:key,
+            originalName:originalName!,
+            mimeType:req.file.mimetype,
+            size:req.file.size,
+            uploadedById:userId,
+            avatarof: {
+                connect:{
+                    id:userId
+                }
+            }
+        }
+    })
+
+
+    if(oldAvatar?.avatarFile){
+        
+        await deleteObject(oldAvatar.avatarFile.key);
+    }
+    if(!transactionResult){
+        await deleteObject(key);
+        throw new AppError("Failed to upload the avatar",500);
+    }
     
+
+    // upload it first, if db fails -> delete the new s3 object
+    // if db success-> delete the old s3 object. 
+    
+
     return res.status(201).json({
         message:"Avatar uploaded successfully!",
         data:key

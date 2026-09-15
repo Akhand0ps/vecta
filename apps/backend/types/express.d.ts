@@ -7,11 +7,11 @@ declare namespace Express{
         userId?:string;
         sessionId?:string;
         file?:{
-            mimetype?:string;
-            buffer?:Buffer;
-            size?:number;
-            originalname?:string;
-            path?:string;
+            mimetype:string;
+            buffer:Buffer;
+            size:number;
+            originalname:string;
+            path:string;
             
         }
     }

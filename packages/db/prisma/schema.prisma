@@ -204,7 +204,7 @@ model StoredFile {
 
 
   uploadedById String
-  uploadedBy User @relation("UserUploadedFiles",fields: [uploadedById],references: [id])
+  uploadedBy User @relation("UserUploadedFiles",fields: [uploadedById],references: [id],onDelete:Cascade)
   
 
 

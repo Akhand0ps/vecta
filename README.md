@@ -23,7 +23,7 @@ Organization (Org)
  ├── Memberships (User <-> Role: ADMIN | MEMBER)
  ├── Invitations (Hashed token links, expiration, revocation)
  └── Boards
-      ├── Sections / Swimlanes (UPCOMING, IN_PROGRESS, DONE)
+      ├── Dynamic Sections / Customizable Pipelines (Configurable per org needs)
       │    └── Issues / Tasks (Cards)
       │         ├── Issue Mappings (Active & historic assignee logs)
       │         ├── Comments (Threaded discussions)
@@ -31,8 +31,8 @@ Organization (Org)
       └── Presence Rooms (Socket mesh via apps/ws on port 3002)
 ```
 
-1. **Organizations**: Isolated team workspaces where owners assign roles (`Admin` or `Member`) and manage access.
-2. **Boards**: Dedicated project canvases divided into workflow stages (`UPCOMING`, `IN_PROGRESS`, `DONE`).
+1. **Organizations**: Multi-tenant workspaces where users create and manage distinct organizations with granular member roles (`Admin` or `Member`).
+2. **Boards & Custom Sections**: Dynamic project canvases with customizable section pipelines configured to match each organization's unique workflow requirements.
 3. **Issues & Assignments**: Cards with descriptions, file attachments, comment feeds, and tracked assignees (`ACTIVE` vs. `INACTIVE`).
 4. **Live Presence**: When teammates open a board, they connect to an independent WebSocket room, broadcasting active presence without polling.
 
