@@ -204,10 +204,11 @@ export const verify = async(req:Request,res:Response)=>{
 
 export const uploadAvatar = asyncHandler(async(req:Request,res:Response)=>{
 
-    
     if(!req.file){
         throw new AppError("No file uploaded",400)
     }
+    const {originalname,mimetype,size,buffer} = req.file;
+    
 
     const userId = req.userId;
     if(!userId) {
@@ -236,43 +237,39 @@ export const uploadAvatar = asyncHandler(async(req:Request,res:Response)=>{
     
     const uploadedFile = await uploadObject(
         key,
-        req.file.buffer,
-        req.file.mimetype
+        buffer,
+        mimetype
     );
 
     if(!uploadedFile)throw new AppError("Failed to upload avatar",500);
 
-    const originalName = req.file.originalname?.split("/").pop();
-    const transactionResult = await prisma.storedFile.create({
-        data:{
-            key:key,
-            originalName:originalName!,
-            mimeType:req.file.mimetype,
-            size:req.file.size,
-            uploadedById:userId,
-            avatarof: {
-                connect:{
-                    id:userId
+    try{
+        const file = await prisma.$transaction(async(tx)=>{
+            const transactionResult = await tx.storedFile.create({
+            data:{
+                key:key,
+                originalName:originalname,
+                mimeType:mimetype,
+                size:size,
+                uploadedById:userId,
+                avatarof: {
+                    connect:{
+                        id:userId
+                    }
                 }
             }
+            })
+        })
+        if(oldAvatar?.avatarFile){
+            await deleteObject(oldAvatar.avatarFile.key);
         }
-    })
 
-
-    if(oldAvatar?.avatarFile){
-        
-        await deleteObject(oldAvatar.avatarFile.key);
-    }
-    if(!transactionResult){
+    }catch(error){
         await deleteObject(key);
-        throw new AppError("Failed to upload the avatar",500);
+        throw new AppError("Error while uploading the avatar in DB",500);
     }
-    
-
     // upload it first, if db fails -> delete the new s3 object
-    // if db success-> delete the old s3 object. 
-    
-
+    // if db success-> delete the old s3 object.
     return res.status(201).json({
         message:"Avatar uploaded successfully!",
         data:key
