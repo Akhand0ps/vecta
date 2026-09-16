@@ -27,6 +27,7 @@
     "packages/*"
   ],
   "dependencies": {
+    "@aws-sdk/s3-request-presigner": "^3.1133.0",
     "@types/redis": "^4.0.11",
     "dotenv": "^17.4.2",
     "redis": "^6.2.1"

@@ -6,7 +6,7 @@ import { generateOtp, isValidOtp } from "../utils/otp";
 import {token,tokenHash} from  "../utils/url";
 import * as cookie from "cookie";
 
-import {uploadObject,deleteObject} from "storage";
+import {uploadObject,deleteObject, getdownloadUrl, getUploadUrl, objectExists} from "storage";
 import { asyncHandler } from "../utils/asyncHandler";
 import { AppError } from "../errors/AppError";
 
@@ -275,4 +275,142 @@ export const uploadAvatar = asyncHandler(async(req:Request,res:Response)=>{
         data:key
     })
 
+})
+
+export const getAvatar = asyncHandler(async(req:Request,res:Response)=>{
+    const userId = req.userId;
+    const user = await prisma.user.findUnique({
+        where:{
+            id:userId,
+        },
+        select:{
+            avatarFile:{
+                select:{
+                    key:true
+                }
+            }
+        }
+    })
+    if(!user?.avatarFile?.key){
+        throw new AppError("avatar not found!",404);
+    }
+    const url = await getdownloadUrl(
+        user.avatarFile.key,
+    )
+    return res.status(200).json({
+        data:url,
+        message:"Avatar url fetched successfully!",
+    })
+})
+
+export const getAvatarUploadUrl = asyncHandler(async(req:Request,res:Response)=>{
+
+    const userId = req.userId;
+    const {fileName,contentType} = req.body;
+
+    if(!fileName || !contentType) throw new AppError("fileName and contentType is required",400);
+
+    const allowedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/webp",
+        "image/png"
+    ]
+    if(!allowedTypes.includes(contentType)){
+        throw new AppError("file not supported",400);
+    } 
+    const fileNameCleaned = fileName.trim().replace(/\s+/g, '_'); 
+    const key = `users/${userId}/avatar/${crypto.randomUUID()}-${fileNameCleaned}`;
+    const uploadUrl = await getUploadUrl(
+        key,
+        contentType,
+    )
+    return res.status(200).json({
+        message:"Upload url generated successfully",
+        data:{
+            uploadUrl,
+            key
+        }
+    })
+})
+
+export const completeAvatarUpload = asyncHandler(async(req:Request,res:Response)=>{
+    
+
+    const userId = req.userId;
+    const {fileName,key,contentType} = req.body;
+
+
+
+    if(!key || !fileName || !contentType){
+        throw new AppError("All fields are required",400);
+    }
+
+
+    const user = await prisma.user.findUnique({
+        where:{
+            id:userId
+        },
+        select:{
+            avatarFile:{
+                select:{
+                    id:true,
+                    key:true
+                }
+            }
+        }
+    })
+
+    const expectedKeyPrefix = `users/${userId}/avatar/`;
+
+    if(!key.startsWith(expectedKeyPrefix)){
+        throw new AppError("Invalid key prefix",403);
+    }
+
+    let metadata;
+    try{
+
+        metadata = await objectExists(key);
+    }catch(error){
+        throw new AppError("File was not uploaded to S3",400);
+    }
+
+
+    if(!metadata)throw new AppError("empty metadata",400);
+    try{
+
+        const transaction = await prisma.$transaction(async(tx)=>{
+
+
+            //left
+        })
+
+    }catch(error){
+
+        await deleteObject(key);
+    }
+
+
+    res.status(200).json({
+        message:"done"
+    })
+    
+    // try{
+
+    //     const transaction = await prisma.$transaction(async(tx)=>{
+
+    //         const file = await tx.storedFile.create({
+    //             data:{
+
+    //             }
+    //         })
+    //     })
+    // }catch(error){
+
+
+    // }
+
+    
+
+    
 })
