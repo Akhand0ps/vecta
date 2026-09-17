@@ -21,9 +21,9 @@ export const objectExists = async(
 
         return await s3.send(command);
 
-    }catch(error){
+    }catch(error:any){
         console.log("Error in objectExists: ",error);
-        return false;
+        return error;
     }
     
 

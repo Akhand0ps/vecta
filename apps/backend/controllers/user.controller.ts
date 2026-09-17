@@ -337,12 +337,14 @@ export const getAvatarUploadUrl = asyncHandler(async(req:Request,res:Response)=>
 export const completeAvatarUpload = asyncHandler(async(req:Request,res:Response)=>{
     
 
-    const userId = req.userId;
+    const userId = req.userId!;
+    // if(!userId){
+    //     throw new AppError("not authorized",403);
+    // }
     const {fileName,key,contentType} = req.body;
 
 
-
-    if(!key || !fileName || !contentType){
+    if((!key || !fileName || !contentType) || (typeof(key) != "string" || typeof(fileName)  != "string" || typeof(contentType)  != "string")){
         throw new AppError("All fields are required",400);
     }
 
@@ -361,7 +363,7 @@ export const completeAvatarUpload = asyncHandler(async(req:Request,res:Response)
         }
     })
 
-    const expectedKeyPrefix = `users/${userId}/avatar/`;
+    const expectedKeyPrefix:string = `users/${userId}/avatar/`;
 
     if(!key.startsWith(expectedKeyPrefix)){
         throw new AppError("Invalid key prefix",403);
@@ -375,42 +377,52 @@ export const completeAvatarUpload = asyncHandler(async(req:Request,res:Response)
         throw new AppError("File was not uploaded to S3",400);
     }
 
+    
 
     if(!metadata)throw new AppError("empty metadata",400);
-    try{
 
+    // const contentLengthfromS3:number = metadata.ContentLength;
+    // const contentTypefromS3:string = metadata.ContentType;
+    // const fileNamefromS3:string = metadata.fileName;
+
+    const {ContentLength,ContentType,originalName} = metadata;
+
+
+    if(ContentType != contentType){
+        await deleteObject(key);
+        throw new AppError("Content type mismatch",400);
+    }
+    // console.log("=============================================");
+    // console.log(ContentLength,ContentType,originalName);
+    // console.log("=============================================");
+    try{        
         const transaction = await prisma.$transaction(async(tx)=>{
+            const file = await tx.storedFile.create({
+                data:{
 
-
-            //left
+                    key:key,
+                    originalName:originalName || fileName,
+                    mimeType:ContentType,
+                    size:ContentLength,
+                    uploadedById: userId,
+                    avatarof: {
+                    connect:{
+                        id:userId
+                    }
+                }
+                }
+            })
+            if(user?.avatarFile){
+                await deleteObject(user.avatarFile.key);
+            }
         })
-
     }catch(error){
 
         await deleteObject(key);
+        throw new AppError("Error while uploading the avatar in DB",500);
     }
 
-
-    res.status(200).json({
+    return res.status(200).json({
         message:"done"
     })
-    
-    // try{
-
-    //     const transaction = await prisma.$transaction(async(tx)=>{
-
-    //         const file = await tx.storedFile.create({
-    //             data:{
-
-    //             }
-    //         })
-    //     })
-    // }catch(error){
-
-
-    // }
-
-    
-
-    
 })
