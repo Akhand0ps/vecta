@@ -39,3 +39,8 @@ jobs:
       - name: Type checking
         run: bun run check-types
 
+      #step 5: Run backend tests
+      - name: Run backend tests
+        run: bun test
+        working-directory: apps/backend
+
