@@ -4,7 +4,7 @@ import {prisma} from "db/client"
 
 
 
-const server = new WebSocketServer({port:3002})
+const wss = new WebSocketServer({port:3002})
 
 
 const ROOMS:Record<string,Array<{id:number,socket:WebSocket}>> = {}
@@ -18,8 +18,8 @@ const ROOMS:Record<string,Array<{id:number,socket:WebSocket}>> = {}
 }
 
 */
-server.on("connection",(socket)=>{
-
+wss.on("connection",(socket,request)=>{
+    console.log(request.headers.cookie)
     socket.on("message",(data)=>{
 
 
@@ -102,7 +102,7 @@ server.on("connection",(socket)=>{
 
                 //ab sabko broadcast krde. chilla ke bata de
 
-                users.forEach(({socket,id})=>{
+                users.forEach(({socket})=>{
                     socket.send(JSON.stringify({
                         type:"leave",
                         id:userExists.id

@@ -66,7 +66,7 @@ export const createUser = async(req:Request,res:Response)=>{
 
 export const login = async(req:Request,res:Response)=>{
 
-
+    console.log("CAME HERREEEEEEEEEEE")
     try{
 
         const{username} = req.body;
@@ -155,11 +155,13 @@ export const verify = async(req:Request,res:Response)=>{
         if(rememberMe){
             //create a session for user
             // const expiresAt  = new Date(Date.now()+24 * 60 * 60*7)
-            res.setHeader("Set-cookie",
+            res.setHeader("Set-Cookie",
                 cookie.stringifySetCookie({
                     name:"session",
-                    value:token,
+                    value:token,  // raw token in cookie; tokenHash stored in DB
                     httpOnly:true,
+                    sameSite:"none",
+                    secure:false,
                     maxAge:24 * 60 * 60 *7,
                     path: "/"
                 })
@@ -169,8 +171,10 @@ export const verify = async(req:Request,res:Response)=>{
             res.setHeader("Set-Cookie",
                 cookie.stringifySetCookie({
                     name:"session",
-                    value:tokenHash,
+                    value:token,  // raw token in cookie; tokenHash stored in DB
                     httpOnly:true,
+                    sameSite:"none",
+                    secure:false,
                     maxAge:60*15,
                     path: "/"
                 })

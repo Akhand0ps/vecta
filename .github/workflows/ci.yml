@@ -1,0 +1,41 @@
+#name shown in github actions tab
+name: CI
+
+#run this workflow on every push to main
+# and on every PULL REQUEST
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+
+#WHAT JOBS TO RUN
+
+jobs:
+  # job name (jo sahi lge woh choosekr)
+  type-check:
+    # WHERE: Use Github's free Ubuntu machiine
+    runs-on: ubuntu-latest
+
+    steps:
+      
+      #step 1: download the repo onto ubuntu machine
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      #step 2: install Bun(current package manager)
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      
+      #step 3: Install all dependencies(like running bun install locally)
+      - name: Install dependencies
+        run: bun install
+      
+      #step 4: Run TS type checking acroos all pakcages via turbo
+      - name: Type checking
+        run: bun run check-types
+
