@@ -48,4 +48,10 @@ jobs:
       - name: Run backend tests
         run: bun test
         working-directory: apps/backend 
+        env:
+          RESEND_API_KEY: ${{secrets.RESEND_API_KEY}}
+          DATABASE_URL: ${{secrets.DATABASE_URL}}
+          REDIS_URL: ${{secrets.REDIS_URL}}
+          JWT_SECRET: ${{secrets.JWT_SECRET}}
+          
 
