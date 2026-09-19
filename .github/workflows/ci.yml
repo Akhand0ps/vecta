@@ -18,6 +18,16 @@ jobs:
   type-check:
     # WHERE: Use Github's free Ubuntu machiine
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+        - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       
@@ -51,7 +61,7 @@ jobs:
         env:
           RESEND_API_KEY: ${{secrets.RESEND_API_KEY}}
           DATABASE_URL: ${{secrets.DATABASE_URL}}
-          REDIS_URL: ${{secrets.REDIS_URL}}
+          REDIS_URL: redis://localhost:6379
           JWT_SECRET: ${{secrets.JWT_SECRET}}
           
 
