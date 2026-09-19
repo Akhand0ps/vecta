@@ -35,12 +35,17 @@ jobs:
       - name: Install dependencies
         run: bun install
       
-      #step 4: Run TS type checking acroos all pakcages via turbo
+      #step 4: generate prisma client
+      - name: generat prisma client
+        run: bunx prisma generate
+        working-directory: packages/db
+      
+      #step 5: Run TS type checking acroos all pakcages via turbo
       - name: Type checking
         run: bun run check-types
 
-      #step 5: Run backend tests
+      #step 6: Run backend tests
       - name: Run backend tests
         run: bun test
-        working-directory: apps/backend
+        working-directory: apps/backend 
 
