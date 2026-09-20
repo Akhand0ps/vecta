@@ -132,7 +132,7 @@ function Board(){
     Currently active users: {JSON.stringify(users)}
 
     <br /><br />
-
+  <br />
 
     <button onClick={sendOtp}>Send Otp</button>
 
