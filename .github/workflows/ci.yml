@@ -63,5 +63,14 @@ jobs:
           DATABASE_URL: ${{secrets.DATABASE_URL}}
           REDIS_URL: redis://localhost:6379
           JWT_SECRET: ${{secrets.JWT_SECRET}}
-          
+      
+      #step 7: Deploy to Railway (only on push to main, after all checks pass)
+      - name: Deploy to Railway
+        if: github.ref == 'refs/heads/main'
+        run: |
+          curl -s -X POST \
+           https://backboard.railway.app/graphql/v2 \
+           -H "Authorization: Bearer ${{secrets.RAILWAY_TOKEN}}" \
+           -H "Content-Type: application/json" \
+           -d "{\"query\":\"mutation{serviceInstanceRedeploy(serviceId:\\\"${{secrets.RAILWAY_SERVICE_ID}}\\\")}\"}"
 
