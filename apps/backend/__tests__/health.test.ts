@@ -1,7 +1,7 @@
 import {describe, it, expect, beforeAll, afterAll} from "bun:test";
 
 import app from "../app";
-
+import {redis} from "db/client";
 
 let server:any;
 
@@ -29,4 +29,26 @@ describe("Health Check",()=>{
         expect(response.status).toBe(200); 
         expect(body.message).toBe("OK")
     })
+
+    // it("should return 429 when rate limit is exceeded on 4th request",async()=>{
+
+    //     //1: clean redis- because of above test
+
+    //     await redis.del("rl:health:127.0.0.1:9999/health");
+    //     for(let i =0;i<3;i++){
+
+    //         const res = await fetch("http:127.0.0.1:9999/health");
+    //         expect(res.status).toBe(200);
+    //     }
+
+    //     //for the 4th one , it shoudl be 429
+
+    //     const blockedRes = await fetch("http:127.0.0.1:9999/health");
+
+    //     const body:any = await blockedRes.json();
+
+    //     expect(blockedRes.status).toBe(429);
+    //     expect(body.message).toBe("Too many requests. Please try again later");
+
+    // })
 }) 

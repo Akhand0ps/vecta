@@ -4,12 +4,18 @@ import { createUser,login, verify,uploadAvatar,getAvatar, getAvatarUploadUrl, co
 import { upload } from "../utils/multer.upload";
 
 import { authMiddleware } from "../middleware/auth.middleware";
+import { rateLimiter } from "../middleware/raterlimiter";
 const router = Router();
 
 
+const loginLimiter = rateLimiter({
+    windowSeconds:120,
+    maxAttempts:3,
+    keyPrefix:"rl:login"
+})
 
 router.post("/register",createUser)
-router.post("/login",login)
+router.post("/login",loginLimiter,login)
 router.post("/verify",verify)
 router.post("/avatar",upload.single("avatar"),authMiddleware,uploadAvatar)
 router.get("/avatar",authMiddleware,getAvatar)

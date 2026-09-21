@@ -13,8 +13,7 @@ import { authMiddleware } from "./middleware/auth.middleware";
 import cookieParser from "cookie-parser";
 import { errorHandler } from "./middleware/errorHandler";
 
-
-
+import { rateLimiter } from "./middleware/raterlimiter";
 const app = express();
 
 app.use(cors({
@@ -36,12 +35,25 @@ app.use("/comment",authMiddleware,commentRouter);
 app.use("/invite",authMiddleware,memberRouter);
 app.use("/auth",userRouter);
 
+// const visits:Record<string, number> = {}
+// const timeRecord:Record<string,NodeJS.Timeout>= {};
+
+
+// const healthLimiter = rateLimiter({
+//     windowSeconds:60,
+//     maxAttempts:3,
+//     keyPrefix:"rl:health"
+// });
 
 app.get("/health",(req,res)=>{
-
+  
+    
     res.status(200).json({
         message:"OK"
     })
+
+
+
 })
 
  
