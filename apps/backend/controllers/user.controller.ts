@@ -206,6 +206,34 @@ export const verify = async(req:Request,res:Response)=>{
 }
 
 
+export const me = asyncHandler(async(req:Request,res:Response)=>{
+
+    const userId = req.userId;
+
+    const user = await prisma.user.findUnique({
+        where:{
+            id:userId
+        },
+        select:{
+            username:true,
+            avatarFile:{
+                select:{
+                    id:true,
+                    key:true,
+                    originalName:true
+                }
+            }
+        }
+    })
+
+    if(!user) throw new AppError("User do not exist in our DB",404);
+
+    return res.status(200).json({
+        message:"user fetched successfully",
+        user
+    })
+})
+
 export const uploadAvatar = asyncHandler(async(req:Request,res:Response)=>{
 
     if(!req.file){

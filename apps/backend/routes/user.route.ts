@@ -1,6 +1,6 @@
 
 import { Router } from "express";
-import { createUser,login, verify,uploadAvatar,getAvatar, getAvatarUploadUrl, completeAvatarUpload } from "../controllers/user.controller";
+import { createUser,login, verify,uploadAvatar,getAvatar, getAvatarUploadUrl, completeAvatarUpload, me } from "../controllers/user.controller";
 import { upload } from "../utils/multer.upload";
 
 import { authMiddleware } from "../middleware/auth.middleware";
@@ -16,6 +16,7 @@ const loginLimiter = rateLimiter({
 
 router.post("/register",createUser)
 router.post("/login",loginLimiter,login)
+router.get("/me",authMiddleware,me)
 router.post("/verify",verify)
 router.post("/avatar",upload.single("avatar"),authMiddleware,uploadAvatar)
 router.get("/avatar",authMiddleware,getAvatar)
