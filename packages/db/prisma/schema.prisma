@@ -19,6 +19,8 @@ model User {
   username String @unique
   password String 
 
+  bio String?
+
 
   memberships Membership[]
   issueMappings IssueMapping[]

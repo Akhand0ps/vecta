@@ -588,8 +588,9 @@ const otpEmailTemplate = ({otp}:{otp:string})=>{
 
 export const sendOtpEmail = async({to,otp}:emailData)=>{
 
+  //  throw new Error("TEST EMAIL FAILURE");
     const {data,error} = await resend.emails.send({
-      from:'Vector <no-reply@apscodes.tech>',
+      from:'Vecta <no-reply@apscodes.tech>',
       to:[to],
       subject:'Otp Verification for login to Vecta',
       html:otpEmailTemplate({otp})

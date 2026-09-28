@@ -1,131 +1,126 @@
-import { color } from "bun";
-// import { APITester } from "./APITester";
-import "./index.css";
+import React, { useState, useEffect } from 'react';
+import './index.css';
+import { BoardProvider, useBoard } from './context/BoardContext';
+import { ToastProvider, useToast } from './context/ToastContext';
+import { ToastContainer } from './components/ToastContainer';
+import { Navbar } from './components/Navbar';
+import { KanbanBoard } from './components/KanbanBoard';
+import { CardDetailModal } from './components/CardDetailModal';
+import { InviteModal } from './components/InviteModal';
+import { LandingModal } from './components/LandingModal';
+import { LandingPage } from './components/LandingPage';
+import { BragModal } from './components/BragModal';
+import { WorkflowTourModal } from './components/WorkflowTourModal';
+import { soundService } from './services/soundService';
 
-import logo from "./logo.svg";
-import reactLogo from "./react.svg";
+interface BoardAppProps {
+  onBackToLanding: () => void;
+}
 
-import {Routes,Route,BrowserRouter,useParams, parsePath} from "react-router";
-import { useEffect, useState } from "react";
+function BoardApp({ onBackToLanding }: BoardAppProps) {
+  const { currentUser, setIsBragOpen } = useBoard();
+  const { addToast } = useToast();
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [isLandingOpen, setIsLandingOpen] = useState(false);
+  const [isTourOpen, setIsTourOpen] = useState(false);
 
-import axios from "axios";
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLSelectElement
+      ) {
+        return;
+      }
+      if ((e.key === 'b' || e.key === 'B') && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        soundService.playClick();
+        setIsBragOpen((prev) => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [setIsBragOpen]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('invite') || params.get('user') === 'sam') {
+      addToast({
+        title: `Welcome ${currentUser.name}`,
+        description: 'You joined Project Board with live peer sync.',
+        type: 'success',
+        duration: 5000,
+      });
+    }
+  }, [currentUser, addToast]);
+
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-app)' }}>
+      {/* Top Navigation */}
+      <Navbar
+        onOpenInvite={() => setIsInviteOpen(true)}
+        onOpenLanding={() => setIsLandingOpen(true)}
+        onOpenTour={() => setIsTourOpen(true)}
+        onBackToLanding={onBackToLanding}
+      />
+
+      {/* Main Kanban Workspace */}
+      <KanbanBoard />
+
+      {/* Centered Command Dossier Modal */}
+      <CardDetailModal />
+
+      {/* Invite Modal */}
+      <InviteModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
+
+      {/* Landing / OTP Signup Simulator Modal */}
+      <LandingModal isOpen={isLandingOpen} onClose={() => setIsLandingOpen(false)} />
+
+      {/* 40-Second Architectural Workflow Tour Film Lightbox */}
+      <WorkflowTourModal isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
+    </div>
+  );
+}
 
 export function App() {
-
-
-  const[issues,setIssues] = useState([]);
-  const[ws,setWs] = useState();
-
-  useEffect(()=>{
-
-    const ws = new WebSocket("ws://localhost:3005");
-    setWs(ws);
-
-    ws.onmessage = (ev)=>{
-
-      const data = ev.data;
-      const parsedData = JSON.parse(data);
-
-
-      if(parsedData.type == "initial_issues"){
-
-        setIssues(parsedData.issues)
-      }
-
-      if(parsedData.type == "issue_added"){
-        setIssues(issues=>[...issues,parsedData.issue]);
-      }
-
-      if(parsedData.type =="issue_deleted"){
-
-        setIssues(issues=>issues.filter(i=>i.id != parsedData.issueId));
-      }
-
+  const [view, setView] = useState<'landing' | 'board'>(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('invite') || params.get('user') || params.get('board') === 'true') {
+      return 'board';
     }
-  },[]);
+    return 'landing';
+  });
+
+  const handleEnterBoard = () => {
+    window.history.pushState(null, '', '/?board=true');
+    setView('board');
+  };
+
+  const handleBackToLanding = () => {
+    window.history.pushState(null, '', '/');
+    setView('landing');
+  };
 
   return (
+    <ToastProvider>
+      <BoardProvider>
+        {view === 'landing' ? (
+          <LandingPage onEnterBoard={handleEnterBoard} />
+        ) : (
+          <>
+            <BoardApp onBackToLanding={handleBackToLanding} />
+            {/* Brag Modal only for board internal shortcuts */}
+            <BragModal />
+          </>
+        )}
 
-    <div style={{display:"flex"}}>
-      <div style={{flex:1}}>
-        Todo
-
-        <input type="text" id='todo_input' placeholder="Issue title" />
-
-         <button onClick={()=>{
-            ws.send(JSON.stringify({
-              type:"issue_added",
-              title:document.getElementById("todo_input")?.value,
-              section:"todo"
-            }))
-         }}>Add Issue</button>
-
-
-        {issues.filter(i=>i.section == "todo").map(issue => <Card ws={ws} id={issue.id} title={issue.title}/>)}
-
-
-      </div>
-      <div style={{flex:1}}>
-        IN_PROGRESS
-
-        <input type="text" id='todo_inprogress' placeholder="Issue title" />
-        <button onClick={()=>{
-
-          ws.send(JSON.stringify({
-            type:"issue_added",
-            title:document.getElementById("todo_inprogress")?.value,
-            section:"in_progress"
-          }))
-
-         }}>Add Issue</button>
-
-        {issues.filter(i=>i.section == "in_progress").map(issue => <Card ws={ws} id={issue.id} title={issue.title}/>)}
-
-      </div>
-      <div style={{flex:1}}>
-        DONE
-
-        <input type="text" id='todo_done' placeholder="Issue title" />
-        <button onClick={()=>{
-
-          ws.send(JSON.stringify({
-            type:"issue_added",
-            title:document.getElementById("todo_done")?.value,
-            section:"done"
-          }))
-
-         }}>Add Issue</button>
-
-        {issues.filter(i=>i.section == "done").map(issue => <Card ws={ws} id={issue.id} title={issue.title}/>)}
-
-      </div>
-    </div>
-
-
-  )
+        {/* Global Interactive Toast Notification Dock */}
+        <ToastContainer />
+      </BoardProvider>
+    </ToastProvider>
+  );
 }
-
-
-function Card({title,ws,id}){
-
-  return (
-
-    <div style={{border:"2px solid black",padding:20,margin:20}}>
-      {title}
-
-
-
-      <button onClick={()=>{
-        ws.send(JSON.stringify({
-          type:"delete_issue",
-          issueId:id
-        }))
-      }}>Delete</button>
-    </div>
-  )
-}
-
-
-
 
 export default App;

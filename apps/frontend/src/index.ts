@@ -2,7 +2,18 @@ import { serve } from "bun";
 import index from "./index.html";
 
 const server = serve({
+  port: 3000,
   routes: {
+    "/vecta-motion.mp4": () => {
+      const file = Bun.file("./public/vecta-motion.mp4");
+      return new Response(file, {
+        headers: {
+          "Content-Type": "video/mp4",
+          "Accept-Ranges": "bytes",
+        },
+      });
+    },
+
     // Serve index.html for all unmatched routes.
     "/*": index,
 
