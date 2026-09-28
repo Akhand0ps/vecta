@@ -1,4 +1,4 @@
-import {prisma,redis} from "db/client";
+import {prisma} from "db/client";
 import type { Request,Response } from "express";
 import { hashpassword,comparePassword} from "../utils/hash";
 import { sendWelcomeEmail,sendOtpEmail } from "mailer";
@@ -9,6 +9,10 @@ import * as cookie from "cookie";
 import {uploadObject,deleteObject, getdownloadUrl, getUploadUrl, objectExists} from "storage";
 import { asyncHandler } from "../utils/asyncHandler";
 import { AppError } from "../errors/AppError";
+import { emailQueue } from "@repo/queue";
+import redis from "@repo/redis/client";
+import type { LoginOtpJob } from "@repo/queue";
+
 
 
 
@@ -90,17 +94,24 @@ export const login = async(req:Request,res:Response)=>{
         await redis.set(`otp:${user.id}:attempts`,0,{EX:60*2});
 
         
-        const emailResponse = await sendOtpEmail({to:username,otp:otp});
+        // const emailResponse = await sendOtpEmail({to:username,otp:otp});
         
-        if(!emailResponse.success){
-            return res.status(500).json({message:"Failed to send otp email"});
-        }
-        // console.log("OTP: ",otp)
+        // if(!emailResponse.success){
+        //     return res.status(500).json({message:"Failed to send otp email"});
+        // }
 
+        const job:LoginOtpJob = {
+            to:username,
+            otp:otp
+        }
+        await emailQueue.add("login-otp",job);
+        // console.log("OTP: ",otp);
         return res.status(200).json({
             message:"Otp sent successfully!",
             user:user
         })
+
+       
     }catch(err:any){
         return res.status(500).json({
             message:err.message
@@ -187,9 +198,9 @@ export const verify = async(req:Request,res:Response)=>{
                 expiresAt: rememberMe==true? new Date(Date.now()+24 * 60 * 60*7*1000) : new Date(Date.now()+60*15*1000)
             }
         })
-        console.log("==============================");
-        console.log(session);
-        console.log("==============================");
+        // console.log("==============================");
+        // console.log(session);
+        // console.log("==============================");
         if(!session)return res.status(500).json({message:"Failed to create session"})
 
         return res.status(200).json({
@@ -218,7 +229,6 @@ export const me = asyncHandler(async(req:Request,res:Response)=>{
             username:true,
             avatarFile:{
                 select:{
-                    id:true,
                     key:true,
                     originalName:true
                 }
@@ -226,11 +236,18 @@ export const me = asyncHandler(async(req:Request,res:Response)=>{
         }
     })
 
-    if(!user) throw new AppError("User do not exist in our DB",404);
+    if(!user) throw new AppError("User do not exist",404);
+
+    
+    const presignedUrl = user.avatarFile?.key ? await getdownloadUrl(user.avatarFile?.key): null;
+
 
     return res.status(200).json({
         message:"user fetched successfully",
-        user
+        user:{
+            username: user.username,
+            avatarUrl: presignedUrl,
+        }
     })
 })
 

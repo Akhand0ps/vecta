@@ -31,6 +31,8 @@
     "jsonwebtoken": "^9.0.3",
     "mailer": "*",
     "multer": "^2.4.0",
-    "storage": "*"
+    "storage": "*",
+    "@repo/queue":"*",
+    "@repo/redis":"*"
   }
 }

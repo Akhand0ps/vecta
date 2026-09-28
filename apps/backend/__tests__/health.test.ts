@@ -1,7 +1,7 @@
 import {describe, it, expect, beforeAll, afterAll} from "bun:test";
 
 import app from "../app";
-import {redis} from "db/client";
+import {prisma,redis} from "db/client";
 
 let server:any;
 

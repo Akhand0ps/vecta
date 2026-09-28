@@ -9,7 +9,7 @@ const router = Router();
 
 
 const loginLimiter = rateLimiter({
-    windowSeconds:120,
+    windowSeconds:60,
     maxAttempts:3,
     keyPrefix:"rl:login"
 })

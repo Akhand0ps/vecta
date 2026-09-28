@@ -27,13 +27,13 @@ app.use(cookieParser())
 
 // //apply auth middleware to all routes after this line
 
-app.use("/org",authMiddleware,orgRouter);
-app.use("/board",authMiddleware,boardRouter);
-app.use("/section",authMiddleware,sectionRouter);
-app.use("/issue",authMiddleware,issueRouter);
-app.use("/comment",authMiddleware,commentRouter);
-app.use("/invite",authMiddleware,memberRouter);
-app.use("/auth",userRouter);
+app.use("/api/v1/org",authMiddleware,orgRouter);
+app.use("/api/v1/board",authMiddleware,boardRouter);
+app.use("/api/v1/section",authMiddleware,sectionRouter);
+app.use("/api/v1/issue",authMiddleware,issueRouter);
+app.use("/api/v1/comment",authMiddleware,commentRouter);
+app.use("/api/v1/invite",authMiddleware,memberRouter);
+app.use("/api/v1/auth",userRouter);
 
 // const visits:Record<string, number> = {}
 // const timeRecord:Record<string,NodeJS.Timeout>= {};
@@ -46,18 +46,9 @@ app.use("/auth",userRouter);
 // });
 
 app.get("/health",(req,res)=>{
-  
-    
     res.status(200).json({
         message:"OK"
     })
-
-
-
 })
-
- 
 app.use(errorHandler);
-
-
 export default app;

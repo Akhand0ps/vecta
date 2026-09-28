@@ -18,6 +18,8 @@ export const createOrgController = asyncHandler(async(req:Request<UserRouteParam
     // console.log(description);
     // console.log("=================");
 
+    if(!name || !description) throw new AppError("name and description are required",400);
+
     const org = await prisma.org.create({
         data:{
             name,
